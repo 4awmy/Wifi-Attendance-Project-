@@ -1,4 +1,4 @@
-# Attendance App - Project Documentation
+# Attendance App - Day 1 Documentation & Guide
 
 ## 📘 Project Overview
 This project is an Android Attendance App built with **Jetpack Compose** and **Firebase**. It follows the **MVVM (Model-View-ViewModel)** architecture to separate the UI from the business logic.
@@ -51,6 +51,68 @@ The ViewModel sits between the UI and the Repository. It holds the **State** of 
 
 ---
 
+## 🚧 Day 1 Tasks & Integration Guide
+
+Here is specifically what needs to happen to finish Day 1, and exactly how we will connect our parts together.
+
+### 1. Member A (UI): Building the Screen
+**Goal:** Replace the template in `MainActivity.kt` with the actual input screen.
+
+**Integration with Member B (ViewModel):**
+You need to "observe" the state I built.
+```kotlin
+// In MainActivity.kt
+
+// 1. Get the ViewModel
+val viewModel: AttendanceViewModel = viewModel()
+// 2. Collect the State
+val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+// 3. Use the state in your UI
+if (uiState.isLoading) {
+    CircularProgressIndicator()
+}
+
+// 4. Call the function on Button Click
+Button(onClick = {
+    // We will plug in Member C's wifi result here later
+    viewModel.submitAttendance(isValidWifi = true, studentId = idText, name = nameText)
+}) {
+    Text("Mark Attendance")
+}
+```
+
+### 2. Member C (Wi-Fi): The Logic
+**Goal:** Create a helper class/function to check the BSSID.
+
+**Integration with Member B (ViewModel):**
+Your logic determines the first parameter of the `submitAttendance` function.
+
+1.  Create a class `WifiHelper(context: Context)`.
+2.  Add a function `isValidWifi(): Boolean`.
+3.  Inside, use `WifiManager` to get the `connectionInfo.bssid`.
+4.  Compare it to our Uni's BSSID (e.g., `"aa:bb:cc:dd:ee:ff"`).
+
+### 3. Putting It Together (The "Handshake")
+In `MainActivity.kt`, Member A and C connect like this:
+
+```kotlin
+// Member A's UI Button
+Button(onClick = {
+    // 1. Call Member C's Logic
+    val isWifiCorrect = wifiHelper.isValidWifi()
+
+    // 2. Pass result to Member B's ViewModel
+    viewModel.submitAttendance(
+        isValidWifi = isWifiCorrect,
+        studentId = idInput,
+        name = nameInput
+    )
+})
+```
+
+---
+
 ## 📂 Project Structure Explained
 
 Here is a guide to the other files in the repository so the team understands the setup:
@@ -74,18 +136,6 @@ Here is a guide to the other files in the repository so the team understands the
     *   `drawable/`: Icons and images.
     *   `values/strings.xml`: Text used in the app (good for translation).
     *   `values/themes.xml`: Colors and styles.
-
----
-
-## 🚀 Remaining Roadmap (2-Day Plan)
-
-### 🟦 DAY 1: Connect UI & Wi-Fi (Immediate Priority)
-*   **Member A (UI):** Replace `MainActivity` content with 2 TextFields + 1 Button. Observe `viewModel.uiState`.
-*   **Member C (Wi-Fi):** Write the `isValidWifi()` function using Android's `WifiManager` and `LocationManager`.
-
-### 🟩 DAY 2: Admin View & Polish
-*   **Member A & B:** Create a list view to show today's attendance (using a Firestore SnapshotListener).
-*   **Everyone:** Test on devices and take screenshots.
 
 ---
 
