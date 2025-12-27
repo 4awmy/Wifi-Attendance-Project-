@@ -2,6 +2,7 @@ plugins {
     // These two lines were already there (Keep them!)
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
 
     // This is the line Firebase wants you to add
     id("com.google.gms.google-services")
