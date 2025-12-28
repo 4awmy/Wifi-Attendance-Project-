@@ -9,7 +9,7 @@ import androidx.navigation.navArgument
 import com.example.attendancewifi.ui.screens.LoginScreen
 import com.example.attendancewifi.ui.screens.AttendanceScreen
 import com.example.attendancewifi.ui.screens.CoursesScreen // Make sure to import this!
-import com.example.attendancewifi.ui.screens.AdminDashboard
+import com.example.attendancewifi.ui.screens.AdminDashboardScreen
 import com.example.attendancewifi.ui.screens.InstructorDashboardScreen
 
 @Composable
@@ -64,7 +64,7 @@ fun AppNavigation() {
 
         // 4. ADMIN DASHBOARD
         composable("admin_dashboard") {
-            AdminDashboard()
+            AdminDashboardScreen()
         }
 
         // 5. INSTRUCTOR DASHBOARD

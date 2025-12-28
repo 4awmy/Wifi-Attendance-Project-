@@ -140,4 +140,58 @@ class AttendanceViewModel : ViewModel() {
         }
     }
 
+    // --- Admin Functions ---
+
+    fun loadAdminData() {
+        _uiState.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            try {
+                val instructors = repository.getAllInstructors()
+                val courses = repository.getAllCourses()
+                _uiState.update { it.copy(isLoading = false, instructors = instructors, courses = courses) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = "Failed to load admin data: ${e.message}") }
+            }
+        }
+    }
+
+    fun createInstructor(email: String, pass: String, name: String) {
+        _uiState.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            try {
+                repository.createInstructor(email, pass, name)
+                loadAdminData() // Refresh list
+                _uiState.update { it.copy(successMessage = "Instructor created successfully") }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = "Failed to create instructor: ${e.message}") }
+            }
+        }
+    }
+
+    fun addCourse(courseName: String) {
+        _uiState.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            try {
+                repository.addCourse(courseName)
+                loadAdminData() // Refresh list
+                _uiState.update { it.copy(successMessage = "Course added successfully") }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = "Failed to add course: ${e.message}") }
+            }
+        }
+    }
+
+    fun assignInstructor(courseName: String, instructorId: String) {
+        _uiState.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            try {
+                repository.assignInstructorToCourse(courseName, instructorId)
+                loadAdminData() // Refresh list
+                _uiState.update { it.copy(successMessage = "Instructor assigned successfully") }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = "Failed to assign instructor: ${e.message}") }
+            }
+        }
+    }
+
 }
