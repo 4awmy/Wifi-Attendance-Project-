@@ -15,89 +15,79 @@ The development is divided among three key roles:
 - **Member C (Wi-Fi Logic/Integration):** Responsible for the `WifiScanner` and integrating hardware checks (permissions, BSSID validation).
 
 ## 3. Roadmap: 2-Day Crash Plan
-- **Day 1 (Core Functionality):**
+- **Day 1 (Core Functionality) - Completed:**
     - UI Implementation (Login, Courses, Attendance Check).
     - Firebase Connection (Auth & Firestore).
     - Basic Wi-Fi BSSID retrieval and validation.
-- **Day 2 (Admin & Polish):**
-    - Admin features (if applicable).
-    - UI Polish and Error Handling.
-    - Testing and Bug Fixes.
+- **Day 2 (Admin & Polish) - Completed:**
+    - **Role-Based Login:** Routing for Admins, Instructors, and Students.
+    - **Admin Dashboard:** Manage courses, instructors, and create students.
+    - **Instructor Dashboard:** Spreadsheet-style attendance sheet with synced scrolling.
+    - **UI Polish:** Modern Card-based designs.
 
 ---
 
 ## 4. Project Structure & File Explanations
 
 ### Root Directory
-- **`build.gradle.kts`**: The top-level build file. It defines plugins common to all modules (Android Application, Kotlin Android, Google Services) but does not apply them directly (`apply false`). It acts as a central configuration hub for dependency versions.
-- **`settings.gradle.kts`**: Defines the project name (`attendance-app`) and includes the `:app` module. It also configures the plugin management repositories (Google, Maven Central, Gradle Plugin Portal).
+- **`build.gradle.kts`**: The top-level build file. Defines common plugins.
+- **`settings.gradle.kts`**: Defines the project name (`attendance-app`) and includes the `:app` module.
 
 ### App Module (`app/`)
 - **`app/build.gradle.kts`**: The module-level build file.
-    - Configures the Android SDK versions (compileSdk, minSdk, targetSdk).
-    - Enables Jetpack Compose (`buildFeatures { compose = true }`).
-    - Declares dependencies: AndroidX Core, Lifecycle, Compose UI/Material3, Firebase (BOM, Auth, Firestore), and Navigation.
-- **`app/src/main/AndroidManifest.xml`**: The application manifest.
-    - Declares permissions: `INTERNET`, `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `ACCESS_WIFI_STATE`, `CHANGE_WIFI_STATE`.
-    - Defines the `MainActivity` as the launcher activity.
+    - Configures Android SDK versions.
+    - Declares dependencies: Compose UI/Material3, Firebase (Auth, Firestore), Navigation, and **Extended Material Icons**.
 
 ### Source Code (`app/src/main/java/com/example/attendancewifi/`)
 
 #### **Data Layer (`data/`)**
 - **`AttendanceRepository.kt`**:
-    - **Purpose:** Acts as the single source of truth for data. It handles all direct interactions with Firebase.
+    - **Purpose:** Single source of truth for Firebase interactions.
     - **Key Functions:**
-        - `loginUser(email, pass)`: Signs in the user using Firebase Auth.
-        - `checkAndMarkAttendance(...)`:
-            1. Fetches the course document from Firestore ("Courses" collection).
-            2. Validates the current Wi-Fi BSSID against the allowed BSSID stored in the course document.
-            3. Checks if the student's group is allowed.
-            4. Checks for duplicate attendance (using a composite ID: `$studentId-$date-$CourseName`).
-            5. Writes the attendance record to the "attendance" collection.
+        - `loginUser(email, pass)`: Signs in user.
+        - `getUserRole(uid)`: Fetches role ('admin', 'instructor', 'student') from Firestore.
+        - `createInstructor(...)` / `createStudent(...)`: Registers users in Auth and Firestore with specific roles.
+        - `addCourse(...)`: Creates new course documents.
+        - `assignInstructorToCourse(...)`: Links instructors to courses.
+        - `checkAndMarkAttendance(...)`: Validates Wi-Fi BSSID and records attendance.
 - **`AttendanceUiState.kt`**:
-    - **Purpose:** A data class representing the state of the UI at any given moment.
-    - **Fields:** `isLoading` (Boolean), `isSuccess` (Boolean), `errorMessage` (String?), `successMessage` (String?). This follows the Unidirectional Data Flow (UDF) pattern.
-- **`models/NetworkInfo.kt`**:
-    - **Purpose:** A simple data class to hold Wi-Fi information (`ssid`, `bssid`).
-
-#### **Network Layer (`network/`)**
-- **`WifiScanner.kt`**:
-    - **Purpose:** Handles the retrieval of the device's current Wi-Fi connection details.
-    - **Key Function:** `getCurrentNetwork()`: Uses the Android `WifiManager` to get the `connectionInfo` (SSID and BSSID).
-    - **Note:** This requires location permissions to work correctly on modern Android versions.
+    - **Purpose:** Represents the UI state.
+    - **Fields:** `role`, `instructors` list, `courses` list, `attendanceSheet` (for instructors), `isLoading`, messages.
+- **`models/` Package:**
+    - **`User.kt`**: Data class for Firestore users (includes `role`, `studentId`).
+    - **`Course.kt`**: Data class for Courses (includes `instructorId`, `enrolledStudentIds`).
+    - **`StudentAttendance.kt`**: Data model for the instructor's attendance sheet view.
+    - **`NetworkInfo.kt`**: Holds Wi-Fi SSID/BSSID.
 
 #### **ViewModel Layer (`viewmodel/`)**
 - **`AttendanceViewModel.kt`**:
-    - **Purpose:** Manages the UI state and holds the business logic. It survives configuration changes.
-    - **Key Components:**
-        - `_uiState`: A private `MutableStateFlow` that holds the current `AttendanceUiState`.
-        - `uiState`: A public read-only `StateFlow` exposed to the UI.
-    - **Functions:**
-        - `loginUser()`: Calls repository login and updates state (loading -> success/error).
-        - `markAttendance()`: Calls repository to check/mark attendance and updates state with the result (success message or error).
+    - **Purpose:** Manages UI state and business logic.
+    - **Key Logic:**
+        - `loadAdminData()`: Fetches all instructors and courses for the Admin Dashboard.
+        - `createStudent(...)`: Calls repository to create a student account.
+        - `loadDummyAttendanceSheet()` / `toggleAttendance(...)`: Manages the spreadsheet data for the Instructor Dashboard.
 
 #### **UI Layer (`ui/`)**
 - **`navigation/AppNavigation.kt`**:
-    - **Purpose:** Defines the navigation graph for the app using `NavHost`.
-    - **Routes:**
-        - `"login"`: Shows `LoginScreen`.
-        - `"courses"`: Shows `CoursesScreen`.
-        - `"attendance/{courseName}"`: Shows `AttendanceScreen`, passing the selected `courseName` as an argument.
-
+    - **Purpose:** Defines the navigation graph using `NavHost`.
+    - **Routing Logic:**
+        - `login` -> Checks role -> Navigates to `admin_dashboard`, `instructor_dashboard`, or `student_home`.
 - **`screens/LoginScreen.kt`**:
-    - **Purpose:** The entry screen for user authentication.
-    - **Features:** Email/Password fields, "Login" button. It observes `uiState` to navigate to "courses" upon success or show an error message.
-
+    - **Purpose:** User authentication. Navigates based on the fetched role.
+- **`screens/AdminDashboardScreen.kt`**:
+    - **Purpose:** Admin management hub.
+    - **Tabs:**
+        1. **Manage Courses:** Add courses and assign instructors via dropdown.
+        2. **Add Instructor:** Form to create instructor accounts.
+        3. **Add Student:** Form to create student accounts.
+- **`screens/InstructorDashboardScreen.kt`**:
+    - **Purpose:** Instructor view.
+    - **Features:** Spreadsheet-style attendance table with **synchronized horizontal scrolling** for dates and checkboxes.
 - **`screens/CoursesScreen.kt`**:
-    - **Purpose:** Displays a list of available courses.
-    - **Features:** A `LazyColumn` listing hardcoded courses. Clicking a course navigates to the `AttendanceScreen` for that specific course.
-
+    - **Purpose:** Student view.
+    - **Design:** Modern **Card-based UI** using `Icons.Default.Book`.
 - **`screens/AttendanceScreen.kt`**:
-    - **Purpose:** The core screen where students mark their attendance.
-    - **Logic:**
-        1. Checks if Location Permission is granted (required for Wi-Fi scanning).
-        2. If granted, it uses `WifiScanner` to get the current BSSID.
-        3. Calls `viewModel.markAttendance()` with student details and the retrieved BSSID.
-        4. Displays success or error messages based on the result (e.g., "Wrong Wi-Fi", "Attendance marked").
+    - **Purpose:** Student attendance marking.
+    - **Logic:** Checks Location Permission -> Scans Wi-Fi BSSID -> Submits attendance.
 
-- **`theme/`**: Contains default Compose theming files (`Color.kt`, `Theme.kt`, `Type.kt`).
+- **`theme/`**: Default Compose theming.
