@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -40,7 +41,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.11"
     }
     packaging {
         resources {
@@ -74,4 +75,13 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     implementation("androidx.navigation:navigation-compose:2.8.5")
+
+// In D:/AttendanceWifi/app/build.gradle.kts
+
+// Force all Firebase libraries to use versions from this specific, stable BOM
+    implementation(enforcedPlatform("com.google.firebase:firebase-bom:33.1.2"))
+
+// Add the libraries (without version numbers)implementation("com.google.firebase:firebase-analytics-ktx") // Use the KTX version
+    implementation("com.google.firebase:firebase-auth-ktx")     // Use the KTX version
+    implementation("com.google.firebase:firebase-firestore-ktx") // Use the KTX version
 }
