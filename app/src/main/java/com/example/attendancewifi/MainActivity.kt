@@ -1,9 +1,5 @@
 package com.example.attendancewifi
 
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.compose.material3.Text
-import com.example.attendancewifi.data.models.formatTimestamp
-import com.example.attendancewifi.network.WifiScanner
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

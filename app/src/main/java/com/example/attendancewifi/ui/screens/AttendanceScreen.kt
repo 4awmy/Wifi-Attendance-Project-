@@ -138,9 +138,9 @@ fun AttendanceScreen(
 
                 viewModel.markAttendance(
                     name = "Nariman",
-                    studentId = "20210001",
-                    courseName = "Operating Systems",
-                    DoctorName = "Reem",
+                    studentId = "222",
+                    courseName = "System Programming",
+                    DoctorName = "Gouda",
                     studentGroup = "Gp1",
                     currentBssid = networkInfo.bssid
                 )
