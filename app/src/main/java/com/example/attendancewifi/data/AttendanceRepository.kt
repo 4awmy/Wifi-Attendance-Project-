@@ -85,6 +85,38 @@ class AttendanceRepository {
         }
     }
 
+    suspend fun createStudent(email: String, password: String, name: String, studentId: String) {
+        // 1. Create Auth User
+        val authResult = auth.createUserWithEmailAndPassword(email, password).await()
+        val uid = authResult.user?.uid ?: return
+        // 2. Create User Object
+        val newUser = User(
+            uid = uid,
+            name = name,
+            email = email,
+            role = "student",
+            studentId = studentId
+        )
+        // 3. Save to Firestore "Users" collection
+        db.collection("Users").document(uid).set(newUser).await()
+    }
+
+    suspend fun getAllStudents(): List<User> {
+        val snapshot = db.collection("Users")
+            .whereEqualTo("role", "student")
+            .get()
+            .await()
+
+        return snapshot.documents.mapNotNull { doc ->
+            val uid = doc.id
+            val name = doc.getString("name") ?: "Unknown"
+            val email = doc.getString("email") ?: ""
+            val role = doc.getString("role") ?: "student"
+            val studentId = doc.getString("studentId")
+            User(uid, name, email, role, studentId)
+        }
+    }
+
     suspend fun checkAndMarkAttendance(
         name: String,
         studentId: String,
