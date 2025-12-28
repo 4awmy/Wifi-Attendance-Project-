@@ -4,6 +4,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import java.util.Date
+import kotlin.text.get
 
 class AttendanceRepository {
 
@@ -20,8 +21,8 @@ class AttendanceRepository {
         name: String,
         studentId: String,
         CourseName: String,
-        DoctorName: String,
-        studentGroup: String,
+        DoctorName :String,
+    studentGroup: String,
         currentBssid: String
     ): String {
 
@@ -41,16 +42,12 @@ class AttendanceRepository {
         val allowedBssid = courseDoc.getString("Bssid")
             ?: return "No Wi-Fi assigned to this course"
 
-        val allowedGroups = (courseDoc.get("Groups") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+        val allowedGroups = courseDoc.get("Groups") as? List<String>
+            ?: emptyList()
 
-        // 1 Check Wi-Fi BSSID (normalize and trim for robust comparison)
         android.util.Log.d("AttendanceRepository", "Current BSSID: $currentBssid, Allowed BSSID: $allowedBssid")
-        val normalizedCurrentBssid = currentBssid.trim().lowercase()
-        val normalizedAllowedBssid = allowedBssid.trim().lowercase()
-        if (normalizedCurrentBssid.isEmpty() || normalizedCurrentBssid == "02:00:00:00:00:00" || normalizedCurrentBssid == "<unknown bssid>") {
-            return "Could not read your Wi-Fi BSSID. Make sure you are connected to Wi-Fi and location permission is granted."
-        }
-        if (normalizedCurrentBssid != normalizedAllowedBssid) {
+        // 1 Check Wi-Fi BSSID
+        if (!currentBssid.equals(allowedBssid, ignoreCase = true)) {
             return "You are not connected to the lecture Wi-Fi"
         }
 
@@ -68,6 +65,7 @@ class AttendanceRepository {
         }
 
         // 4️ Save attendance
+        val currentUserId = auth.currentUser?.uid ?: "anonymous"
 
         val data = hashMapOf(
             "name" to name,
