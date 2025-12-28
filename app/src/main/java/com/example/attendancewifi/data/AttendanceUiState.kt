@@ -6,5 +6,6 @@ data class AttendanceUiState(
     val isSignedUp: Boolean = false,
     val errorMessage: String? = null,
     val successMessage: String? = null,
-    val role: String? = null
+    val role: String? = null,
+    val analyticsData: Map<String, Int> = emptyMap()
 )

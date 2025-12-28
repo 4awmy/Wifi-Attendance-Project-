@@ -17,13 +17,3 @@ fun AdminDashboard() {
         Text(text = "Admin Dashboard", fontSize = 24.sp)
     }
 }
-
-@Composable
-fun InstructorDashboard() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = "Instructor Dashboard", fontSize = 24.sp)
-    }
-}

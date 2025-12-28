@@ -10,7 +10,7 @@ import com.example.attendancewifi.ui.screens.LoginScreen
 import com.example.attendancewifi.ui.screens.AttendanceScreen
 import com.example.attendancewifi.ui.screens.CoursesScreen // Make sure to import this!
 import com.example.attendancewifi.ui.screens.AdminDashboard
-import com.example.attendancewifi.ui.screens.InstructorDashboard
+import com.example.attendancewifi.ui.screens.InstructorDashboardScreen
 
 @Composable
 fun AppNavigation() {
@@ -69,7 +69,7 @@ fun AppNavigation() {
 
         // 5. INSTRUCTOR DASHBOARD
         composable("instructor_dashboard") {
-            InstructorDashboard()
+            InstructorDashboardScreen()
         }
     }
 }

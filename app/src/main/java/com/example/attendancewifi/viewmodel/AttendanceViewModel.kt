@@ -16,6 +16,11 @@ class AttendanceViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(AttendanceUiState())
     val uiState = _uiState.asStateFlow()
 
+    init {
+        // Load initial analytics for default course
+        loadAnalytics("CS101 - Intro to CS")
+    }
+
     fun loginUser(email: String, pass: String) {
         // Validation
         if (email.isBlank() || pass.isBlank()) {
@@ -67,6 +72,29 @@ class AttendanceViewModel : ViewModel() {
                     it.copy(isLoading = false, errorMessage = e.message)
                 }
             }
+        }
+    }
+
+    fun loadAnalytics(courseName: String) {
+        val data = getDummyAnalytics(courseName)
+        _uiState.update { it.copy(analyticsData = data) }
+    }
+
+    private fun getDummyAnalytics(courseName: String): Map<String, Int> {
+        // Hardcoded data for testing
+        return if (courseName.contains("CS101")) {
+            mapOf(
+                "2023-11-01" to 45,
+                "2023-11-03" to 42,
+                "2023-11-05" to 48
+            )
+        } else {
+            // Just some different dummy data for variety
+            mapOf(
+                "2023-11-02" to 30,
+                "2023-11-04" to 35,
+                "2023-11-06" to 32
+            )
         }
     }
 
