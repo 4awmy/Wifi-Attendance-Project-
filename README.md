@@ -1,75 +1,101 @@
-# Attendance App - Project Status & Roadmap
+# 📱 Android Attendance App (Firebase + Jetpack Compose)
 
-## 📊 Current Implementation Status
-**Last Updated:** Phase 1 (Core Logic Implementation)
+## 📖 Project Manual & Status Report
+**Current State:** Phase 1 Complete (Logic & Data Layer)
+**Next Steps:** Phase 2 (UI Implementation & Wi-Fi Integration)
 
-We have successfully set up the project structure and implemented the **Data & Logic Layers**. The UI is currently in the initial template state.
-
-### ✅ Completed Modules
-*   **Repository Layer (Member B):**
-    *   `AttendanceRepository.kt`: Implemented. Connects to Firebase Firestore.
-    *   **Duplicate Prevention:** Uses `docId = "$studentId-$today"` to ensure only one submission per day.
-    *   **Data Model:** Saves `name`, `id`, `date`, and `timestamp`.
-*   **ViewModel Layer (Member B):**
-    *   `AttendanceViewModel.kt`: Implemented. Handles business logic.
-    *   **State Management:** Uses `StateFlow` (`AttendanceUiState`) for Loading, Success, and Error states.
-    *   **Logic:** `submitAttendance()` function is ready to accept Wi-Fi validation results.
-*   **Build Configuration:**
-    *   Fixed Kotlin 2.0 / Compose Compiler build errors.
-    *   `google-services.json` support verified (must be added manually by teammates).
-
-### 🚧 Pending / In-Progress Modules
-*   **User Interface (Member A):**
-    *   `MainActivity.kt` currently contains default template code.
-    *   **Needs:** Student Check-in Screen (Inputs for Name/ID, "Check In" Button, Status Messages).
-*   **Wi-Fi Logic (Member C):**
-    *   **Needs:** `WifiHelper` class or logic to detect BSSID/SSID.
-    *   **Needs:** Android Permission handling (Location/Wi-Fi).
+This README explains the entire project structure, the code developed so far, and the remaining tasks for the team.
 
 ---
 
-## 🚀 Remaining Roadmap (2-Day Crash Plan)
+## 🏗 Project Architecture (MVVM)
+We are using the **Model-View-ViewModel** pattern to ensure our code is clean, testable, and robust.
 
-Based on our instructor-aligned timeline, here is what is left to achieve in the next 48 hours.
+1.  **Repository (Model):** Handles data (Firebase).
+2.  **ViewModel:** Handles business logic and state.
+3.  **UI (View):** Displays data (Jetpack Compose).
 
-### 🟦 DAY 1: Connect UI & Wi-Fi (Immediate Priority)
+---
 
-#### 👤 Member A: UI Implementation
-*   **Task:** Replace `MainActivity` template with the **Student Attendance Screen**.
+## 🧑‍💻 Codebase Explanation: What is Developed?
+
+### 1. The Backend Logic (Member B)
+The core data handling is **fully implemented**.
+
+*   **`AttendanceRepository.kt`**
+    *   **Purpose:** Connects to Firebase Cloud Firestore.
+    *   **Key Function:** `markAttendance(studentId, name)`
+    *   **Smart Logic:** It generates a unique Document ID (`studentId-date`) to prevent students from submitting duplicate attendance for the same day. It uses `set()` to overwrite, not duplicate.
+
+*   **`AttendanceViewModel.kt`**
+    *   **Purpose:** The "Brain" of the app. It connects the UI to the Repository.
+    *   **State Management:** It uses `StateFlow` to expose a single `AttendanceUiState` object.
+    *   **Logic:** The `submitAttendance()` function coordinates the entire process:
+        1.  Checks Wi-Fi validity (passed as a parameter).
+        2.  Sets `isLoading = true`.
+        3.  Calls the Repository to save to Firebase.
+        4.  Updates state to `isSuccess` or `errorMessage`.
+
+*   **`AttendanceUIState.kt`**
+    *   **Purpose:** A simple data class holding the screen state (`isLoading`, `isSuccess`, `errorMessage`).
+
+### 2. Build Configuration (DevOps)
+We have fixed critical build issues to support **Kotlin 2.0**.
+*   **`build.gradle.kts`:** Updated to use the `org.jetbrains.kotlin.plugin.compose` plugin.
+*   **`gradle/libs.versions.toml`:** Centralized version management (Version Catalogs).
+
+---
+
+## 🚧 Pending Tasks (The "To-Do" List)
+
+While the logic is ready, the app needs its visible layer and sensors.
+
+### 🔴 Member A: User Interface (Pending)
+*   **File:** `MainActivity.kt` (Currently contains default template).
+*   **Task:** Build the **Student Check-in Screen**.
 *   **Requirements:**
-    *   Two TextFields (Name, Student ID).
-    *   One Button ("Mark Attendance").
-    *   Observe `viewModel.uiState` to show a ProgressBar (Loading) or Toast/Text (Success/Error).
+    *   TextFields for Name and Student ID.
+    *   "Mark Attendance" Button.
+    *   Observe `viewModel.uiState` to show Loading/Success/Error.
 
-#### 👤 Member C: Wi-Fi Validation
-*   **Task:** Implement Wi-Fi detection logic.
+### 🔴 Member C: Wi-Fi Logic (Pending)
+*   **File:** (New File Needed, e.g., `WifiHelper.kt`).
+*   **Task:** Implement BSSID Detection.
 *   **Requirements:**
-    *   Request `ACCESS_FINE_LOCATION` logic.
-    *   Create a function `isValidWifi(): Boolean`.
-    *   *Logic:* Check if the phone is connected to the specific University BSSID/SSID.
-    *   Pass the result to `viewModel.submitAttendance(isValidWifi, ...)`
+    *   Check Android Permissions (`ACCESS_FINE_LOCATION`).
+    *   Get current Wi-Fi BSSID and compare with University BSSID.
+    *   Pass the `Boolean` result to the ViewModel.
 
 ---
 
-### 🟩 DAY 2: Admin View & Polish
+## 🛠 Setup & Integration Guide
 
-#### 👤 Member A & B: Admin Dashboard
-*   **Task:** Create a simple Admin List to view today's attendance.
-*   **Implementation:**
-    *   **Repo:** Add `getTodayAttendance()` using a Firestore SnapshotListener (Real-time).
-    *   **UI:** Add a second screen (or toggle) with a `LazyColumn` to display the list.
+### 1. Firebase Setup (Crucial!)
+The app requires `google-services.json` to connect to Firebase.
+*   **Status:** This file is usually **ignored** by Git for security.
+*   **Action:** If `app/google-services.json` is missing or **Red** in Android Studio:
+    1.  Download it from the Firebase Console.
+    2.  Place it in the `app/` folder.
+    3.  Right-click -> **Git** -> **Add**.
 
-#### 🏁 Final Polish
-*   **Error Handling:** Show friendly messages ("Connect to Uni Wi-Fi", "Permission Denied").
-*   **Testing:** Verify on 2 physical devices.
-*   **Documentation:** Take screenshots for the final submission.
+### 2. How to Run
+1.  Open the project in Android Studio (Ladybug or newer recommended).
+2.  Wait for Gradle Sync to finish.
+3.  Connect a physical device or Emulator.
+4.  Run `app` (Shift+F10).
 
----
+### 3. Integration Code Snippet
+When Member A (UI) and Member C (Wifi) are ready, here is how you connect to Member B's ViewModel in `MainActivity`:
 
-## 🛠 Setup Instructions for Teammates
-1.  **Clone the Repo.**
-2.  **Add Firebase Config:** Download `google-services.json` from Firebase Console and place it in `app/`. (See *Git Note* below).
-3.  **Build:** Run `./gradlew assembleDebug`.
+```kotlin
+// Inside the Composable
+val viewModel: AttendanceViewModel = viewModel()
+val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-### ⚠️ Git Note: `google-services.json`
-If this file is **Red** in Android Studio, right-click it and select **Git > Add**. It must be part of the repo for everyone to build.
+Button(onClick = {
+    val isWifiValid = WifiHelper(context).checkWifi() // Member C
+    viewModel.submitAttendance(isWifiValid, idInput, nameInput) // Member B
+}) {
+    Text("Submit")
+}
+```
