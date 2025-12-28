@@ -1,8 +1,11 @@
 package com.example.attendancewifi.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Book
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -33,7 +36,7 @@ fun CoursesScreen(onCourseClick: (String) -> Unit) {
 
         // 2. A scrollable list (LazyColumn is like RecyclerView)
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
             items(courses) { courseName ->
@@ -43,15 +46,38 @@ fun CoursesScreen(onCourseClick: (String) -> Unit) {
     }
 }
 
-// A generic button for each course
+// A generic Card for each course using the new UI design
 @Composable
 fun CourseItem(name: String, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth().height(60.dp),
-        shape = MaterialTheme.shapes.medium
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp)
+            .clickable { onClick() },
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
-        Text(text = name, fontSize = 18.sp)
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Book,
+                contentDescription = "Course Icon",
+                modifier = Modifier.size(32.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Text(
+                text = name,
+                fontSize = 20.sp,
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
     }
 }
 

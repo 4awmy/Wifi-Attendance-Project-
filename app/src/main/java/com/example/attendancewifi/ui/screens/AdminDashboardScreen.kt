@@ -22,7 +22,7 @@ fun AdminDashboardScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Manage Courses", "Add Instructor")
+    val tabs = listOf("Manage Courses", "Add Instructor", "Add Student")
 
     // Load admin data when screen opens
     LaunchedEffect(Unit) {
@@ -60,6 +60,68 @@ fun AdminDashboardScreen(
         when (selectedTabIndex) {
             0 -> ManageCoursesTab(viewModel, uiState.courses, uiState.instructors)
             1 -> AddInstructorTab(viewModel)
+            2 -> AddStudentTab(viewModel)
+        }
+    }
+}
+
+@Composable
+fun AddStudentTab(viewModel: AttendanceViewModel) {
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var studentId by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Name") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = studentId,
+            onValueChange = { studentId = it },
+            label = { Text("Student ID") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Button(
+            onClick = {
+                if (name.isNotBlank() && email.isNotBlank() && password.isNotBlank() && studentId.isNotBlank()) {
+                    viewModel.createStudent(email, password, name, studentId)
+                    // Clear fields
+                    name = ""
+                    email = ""
+                    password = ""
+                    studentId = ""
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+        ) {
+            Text("Create Student")
         }
     }
 }

@@ -194,4 +194,17 @@ class AttendanceViewModel : ViewModel() {
         }
     }
 
+    fun createStudent(email: String, pass: String, name: String, studentId: String) {
+        _uiState.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            try {
+                repository.createStudent(email, pass, name, studentId)
+                // Optionally reload data if we were displaying a list of students
+                _uiState.update { it.copy(isLoading = false, successMessage = "Student created successfully") }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = "Failed to create student: ${e.message}") }
+            }
+        }
+    }
+
 }
