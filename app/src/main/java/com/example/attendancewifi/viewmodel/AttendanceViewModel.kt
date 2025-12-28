@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.attendancewifi.data.AttendanceRepository
 import com.example.attendancewifi.data.AttendanceUiState
+import com.example.attendancewifi.network.WifiScanner
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -35,4 +36,37 @@ class AttendanceViewModel : ViewModel() {
             }
         }
     }
+    fun markAttendance(
+        name: String,
+        courseName: String,
+        studentId: String,
+        DoctorName :String,
+        studentGroup: String,
+        currentBssid: String
+    ) {
+        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+        viewModelScope.launch {
+            try {
+                val result = repository.checkAndMarkAttendance(
+
+                    name = name,
+                    CourseName = courseName,
+                    studentId = studentId,
+                    DoctorName=DoctorName,
+                    studentGroup = studentGroup,
+                    currentBssid = currentBssid
+                )
+
+                _uiState.update {
+                    it.copy(isLoading = false, successMessage = result)
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(isLoading = false, errorMessage = e.message)
+                }
+            }
+        }
+    }
+
 }

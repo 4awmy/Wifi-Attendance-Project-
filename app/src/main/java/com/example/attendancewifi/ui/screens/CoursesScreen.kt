@@ -16,7 +16,7 @@ fun CoursesScreen(onCourseClick: (String) -> Unit) {
     // 1. Hardcoded list of courses
     val courses = listOf(
         "Operating Systems",
-        "Systems Programming",
+        "System Programming",
         "Theory of Computation",
         "Database Systems"
     )
