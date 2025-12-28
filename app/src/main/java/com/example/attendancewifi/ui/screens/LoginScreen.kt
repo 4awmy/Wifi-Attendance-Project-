@@ -24,17 +24,18 @@ private val Golden = Color(0xFFD4AF37) // Gold color
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
-    viewModel: AttendanceViewModel = viewModel()
+    onLoginSuccess: (String) -> Unit,
+    viewModel: AttendanceViewModel = viewModel() // Inject ViewModel
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) {
-            onLoginSuccess()
+    // 1. EFFECT: If login is successful, navigate automatically
+    LaunchedEffect(uiState.isSuccess, uiState.role) {
+        if (uiState.isSuccess && uiState.role != null) {
+            onLoginSuccess(uiState.role!!)
         }
     }
 
