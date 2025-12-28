@@ -5,5 +5,6 @@ data class AttendanceUiState(
     val isSuccess: Boolean = false,
     val isSignedUp: Boolean = false,
     val errorMessage: String? = null,
-    val successMessage: String? = null
+    val successMessage: String? = null,
+    val role: String? = null
 )

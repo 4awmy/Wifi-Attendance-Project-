@@ -14,7 +14,7 @@ import com.example.attendancewifi.viewmodel.AttendanceViewModel
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (String) -> Unit,
     viewModel: AttendanceViewModel = viewModel() // Inject ViewModel
 ) {
     // State variables for the Text Boxes
@@ -25,9 +25,9 @@ fun LoginScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     // 1. EFFECT: If login is successful, navigate automatically
-    LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) {
-            onLoginSuccess()
+    LaunchedEffect(uiState.isSuccess, uiState.role) {
+        if (uiState.isSuccess && uiState.role != null) {
+            onLoginSuccess(uiState.role!!)
         }
     }
 

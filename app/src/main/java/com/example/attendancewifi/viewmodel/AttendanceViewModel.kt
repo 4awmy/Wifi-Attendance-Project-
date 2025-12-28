@@ -28,9 +28,10 @@ class AttendanceViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 // Call the Repository Login
-                repository.loginUser(email, pass)
+                val uid = repository.loginUser(email, pass)
+                val role = repository.getUserRole(uid)
                 // Success!
-                _uiState.update { it.copy(isLoading = false, isSuccess = true) }
+                _uiState.update { it.copy(isLoading = false, isSuccess = true, role = role) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, errorMessage = "Login Failed: ${e.message}") }
             }

@@ -17,6 +17,14 @@ class AttendanceRepository {
         return result.user?.uid ?: throw Exception("Login failed")
     }
 
+    suspend fun getUserRole(uid: String): String {
+        val document = db.collection("Users").document(uid).get().await()
+        if (!document.exists()) {
+            throw Exception("Account setup incomplete: No role assigned")
+        }
+        return document.getString("role") ?: throw Exception("Account setup incomplete: No role assigned")
+    }
+
     suspend fun checkAndMarkAttendance(
         name: String,
         studentId: String,
