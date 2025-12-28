@@ -83,13 +83,13 @@ fun CourseCard(course: Course, onClick: () -> Unit) {
                 Color(0xFF4A9F46),
                 Color(0xFF4A9F46)
             ),
-            // 🔵 Blue
+
             listOf(
                 Color(0xFFE3ECFF),
                 Color(0xFF4B6EDC),
                 Color(0xFF4B6EDC)
             ),
-            // 🌸 Pink
+
             listOf(
                 Color(0xFFFFE1EC),
                 Color(0xFFE75C8D),
