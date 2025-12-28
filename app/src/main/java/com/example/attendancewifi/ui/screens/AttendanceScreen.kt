@@ -1,6 +1,10 @@
 package com.example.attendancewifi.ui.screens
 
+import android.Manifest // <-- Import Manifest
+import android.content.pm.PackageManager
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,9 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,9 +24,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.attendancewifi.network.WifiScanner
 import com.example.attendancewifi.viewmodel.AttendanceViewModel
+
 
 //@Composable
 //fun AttendanceScreen(courseName: String) {
@@ -89,6 +92,20 @@ fun AttendanceScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
 
+    // --- PERMISSION HANDLING LOGIC ---
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                // Permission was granted. Inform the user to try again.
+                Toast.makeText(context, "Location permission granted. Please check attendance again.", Toast.LENGTH_SHORT).show()
+            } else {
+                // Permission was denied.
+                Toast.makeText(context, "Location permission is required to verify Wi-Fi.", Toast.LENGTH_LONG).show()
+            }
+        }
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -133,17 +150,33 @@ fun AttendanceScreen(
 
         Button(
             onClick = {
-                val wifiScanner = WifiScanner(context)
-                val networkInfo = wifiScanner.getCurrentNetwork()
+                // Check for location permission before scanning
+                when (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    PackageManager.PERMISSION_GRANTED -> {
+                        // Permission is already granted, proceed with attendance check
+                        val wifiScanner = WifiScanner(context)
+                        val networkInfo = wifiScanner.getCurrentNetwork()
 
-                viewModel.markAttendance(
-                    name = "Nariman",
-                    studentId = "20210001",
-                    courseName = "Operating Systems",
-                    DoctorName = "Reem",
-                    studentGroup = "Gp1",
-                    currentBssid = networkInfo.bssid
-                )
+                        // Add a check to prevent sending the placeholder BSSID
+                        if (networkInfo.bssid == "02:00:00:00:00:00" || networkInfo.bssid.isBlank()) {
+                            Toast.makeText(context, "Could not get Wi-Fi BSSID. Please ensure Location is enabled on your device.", Toast.LENGTH_LONG).show()
+                            return@Button
+                        }
+
+                        viewModel.markAttendance(
+                            name = "Nariman",
+                            studentId = "231006695",
+                            courseName = courseName, // Use the dynamic course name from the navigation argument
+                            DoctorName = "Reem",
+                            studentGroup = "Gp1",
+                            currentBssid = networkInfo.bssid
+                        )
+                    }
+                    else -> {
+                        // Permission is not granted, launch the permission request dialog
+                        permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    }
+                }
             },
             enabled = !uiState.isLoading,
             modifier = Modifier
@@ -154,12 +187,18 @@ fun AttendanceScreen(
         }
     }
 
-    // 🔔 One-time Toast messages (safe)
+    // This block is removed because the ViewModel now handles showing success/error states
+    // through the status text. Showing a Toast can be redundant. If you still want them,
+    // you can uncomment this.
+    /*
     uiState.successMessage?.let {
         Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+        // Consider resetting the message in the ViewModel after showing it
     }
 
     uiState.errorMessage?.let {
         Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+        // Consider resetting the message in the ViewModel after showing it
     }
+    */
 }

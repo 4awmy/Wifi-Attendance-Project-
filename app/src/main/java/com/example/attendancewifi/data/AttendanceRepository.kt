@@ -45,6 +45,7 @@ class AttendanceRepository {
         val allowedGroups = courseDoc.get("Groups") as? List<String>
             ?: emptyList()
 
+        android.util.Log.d("AttendanceRepository", "Current BSSID: $currentBssid, Allowed BSSID: $allowedBssid")
         // 1 Check Wi-Fi BSSID
         if (!currentBssid.equals(allowedBssid, ignoreCase = true)) {
             return "You are not connected to the lecture Wi-Fi"
