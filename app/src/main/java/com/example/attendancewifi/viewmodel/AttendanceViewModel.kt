@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.attendancewifi.data.AttendanceRepository
 import com.example.attendancewifi.data.AttendanceUiState
+import com.example.attendancewifi.data.models.StudentAttendance
 import com.example.attendancewifi.network.WifiScanner
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,6 +20,7 @@ class AttendanceViewModel : ViewModel() {
     init {
         // Load initial analytics for default course
         loadAnalytics("CS101 - Intro to CS")
+        loadDummyAttendanceSheet()
     }
 
     fun loginUser(email: String, pass: String) {
@@ -95,6 +97,46 @@ class AttendanceViewModel : ViewModel() {
                 "2023-11-04" to 35,
                 "2023-11-06" to 32
             )
+        }
+    }
+
+    private fun loadDummyAttendanceSheet() {
+        // Hardcoded Dates
+        val dates = listOf("Mon 10/1", "Tue 10/2", "Wed 10/3", "Thu 10/4", "Fri 10/5")
+
+        // Hardcoded Students
+        val sheet = listOf(
+            StudentAttendance("s1", "Alice Smith",
+                mapOf("Mon 10/1" to true, "Tue 10/2" to true, "Wed 10/3" to true, "Thu 10/4" to true, "Fri 10/5" to true)),
+            StudentAttendance("s2", "Bob Jones",
+                mapOf("Mon 10/1" to true, "Tue 10/2" to false, "Wed 10/3" to true, "Thu 10/4" to false, "Fri 10/5" to true)),
+            StudentAttendance("s3", "Charlie Brown",
+                mapOf("Mon 10/1" to false, "Tue 10/2" to false, "Wed 10/3" to false, "Thu 10/4" to true, "Fri 10/5" to true)),
+            StudentAttendance("s4", "David White",
+                mapOf("Mon 10/1" to true, "Tue 10/2" to true, "Wed 10/3" to true, "Thu 10/4" to true, "Fri 10/5" to false)),
+            StudentAttendance("s5", "Eve Black",
+                mapOf("Mon 10/1" to true, "Tue 10/2" to true, "Wed 10/3" to false, "Thu 10/4" to true, "Fri 10/5" to true))
+        )
+
+        _uiState.update { it.copy(attendanceDates = dates, attendanceSheet = sheet) }
+    }
+
+    fun toggleAttendance(studentId: String, date: String) {
+        val currentSheet = _uiState.value.attendanceSheet.toMutableList()
+        val studentIndex = currentSheet.indexOfFirst { it.id == studentId }
+
+        if (studentIndex != -1) {
+            val student = currentSheet[studentIndex]
+            val newAttendanceMap = student.attendance.toMutableMap()
+
+            // Toggle
+            val currentValue = newAttendanceMap[date] ?: false
+            newAttendanceMap[date] = !currentValue
+
+            // Update List
+            currentSheet[studentIndex] = student.copy(attendance = newAttendanceMap)
+
+            _uiState.update { it.copy(attendanceSheet = currentSheet) }
         }
     }
 

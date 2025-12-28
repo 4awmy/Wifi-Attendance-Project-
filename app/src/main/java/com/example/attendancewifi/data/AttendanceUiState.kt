@@ -1,4 +1,5 @@
 package com.example.attendancewifi.data
+import com.example.attendancewifi.data.models.StudentAttendance
 
 data class AttendanceUiState(
     val isLoading: Boolean = false,
@@ -7,5 +8,7 @@ data class AttendanceUiState(
     val errorMessage: String? = null,
     val successMessage: String? = null,
     val role: String? = null,
-    val analyticsData: Map<String, Int> = emptyMap()
+    val analyticsData: Map<String, Int> = emptyMap(),
+    val attendanceSheet: List<StudentAttendance> = emptyList(),
+    val attendanceDates: List<String> = emptyList()
 )
