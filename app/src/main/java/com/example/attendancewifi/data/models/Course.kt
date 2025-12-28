@@ -1,6 +1,8 @@
 package com.example.attendancewifi.data.models
-data class Course(
-    val code: String,
-    val name: String,
 
+data class Course(
+    val id: String = "",
+    val name: String = "",
+    val instructorId: String = "",
+    val enrolledStudentIds: List<String> = emptyList()
 )

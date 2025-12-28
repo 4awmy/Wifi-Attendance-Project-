@@ -1,5 +1,7 @@
 package com.example.attendancewifi.data
 
+import com.example.attendancewifi.data.models.Course
+import com.example.attendancewifi.data.models.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -15,6 +17,104 @@ class AttendanceRepository {
     suspend fun loginUser(email: String, pass: String): String {
         val result = auth.signInWithEmailAndPassword(email, pass).await()
         return result.user?.uid ?: throw Exception("Login failed")
+    }
+
+    suspend fun getUserRole(uid: String): String {
+        val document = db.collection("Users").document(uid).get().await()
+        if (!document.exists()) {
+            throw Exception("Account setup incomplete: No role assigned")
+        }
+        return document.getString("role") ?: throw Exception("Account setup incomplete: No role assigned")
+    }
+
+    // --- Admin Features ---
+
+    suspend fun createInstructor(email: String, pass: String, name: String) {
+        // Create user in Firebase Auth
+        val result = auth.createUserWithEmailAndPassword(email, pass).await()
+        val uid = result.user?.uid ?: throw Exception("Instructor creation failed")
+
+        // Write to Firestore Users collection
+        val userMap = hashMapOf(
+            "name" to name,
+            "email" to email,
+            "role" to "instructor"
+        )
+        db.collection("Users").document(uid).set(userMap).await()
+    }
+
+    suspend fun addCourse(courseName: String) {
+        val courseMap = hashMapOf(
+            "courseName" to courseName,
+            "instructorId" to "",
+            "enrolledStudentIds" to emptyList<String>()
+        )
+        // Document ID is the courseName itself
+        db.collection("Courses").document(courseName).set(courseMap).await()
+    }
+
+    suspend fun assignInstructorToCourse(courseName: String, instructorId: String) {
+        db.collection("Courses").document(courseName)
+            .update("instructorId", instructorId)
+            .await()
+    }
+
+    suspend fun getAllInstructors(): List<User> {
+        val snapshot = db.collection("Users")
+            .whereEqualTo("role", "instructor")
+            .get()
+            .await()
+
+        return snapshot.documents.mapNotNull { doc ->
+            val uid = doc.id
+            val name = doc.getString("name") ?: "Unknown"
+            val email = doc.getString("email") ?: ""
+            val role = doc.getString("role") ?: "instructor"
+            User(uid, name, email, role)
+        }
+    }
+
+    suspend fun getAllCourses(): List<Course> {
+        val snapshot = db.collection("Courses").get().await()
+        return snapshot.documents.mapNotNull { doc ->
+            val id = doc.id // courseName is the ID
+            val name = doc.getString("courseName") ?: id
+            val instructorId = doc.getString("instructorId") ?: ""
+            val enrolled = doc.get("enrolledStudentIds") as? List<String> ?: emptyList()
+            Course(id, name, instructorId, enrolled)
+        }
+    }
+
+    suspend fun createStudent(email: String, password: String, name: String, studentId: String) {
+        // 1. Create Auth User
+        val authResult = auth.createUserWithEmailAndPassword(email, password).await()
+        val uid = authResult.user?.uid ?: return
+        // 2. Create User Object
+        val newUser = User(
+            uid = uid,
+            name = name,
+            email = email,
+            role = "student",
+            studentId = studentId
+        )
+        // 3. Save to Firestore "Users" collection
+        db.collection("Users").document(uid).set(newUser).await()
+    }
+
+    suspend fun getAllStudents(): List<User> {
+        val snapshot = db.collection("Users")
+            .whereEqualTo("role", "student")
+            .get()
+            .await()
+
+        return snapshot.documents.mapNotNull { doc ->
+            val uid = doc.id
+            val name = doc.getString("name") ?: "Unknown"
+            val email = doc.getString("email") ?: ""
+            val role = doc.getString("role") ?: "student"
+            val studentId = doc.getString("studentId")
+            User(uid, name, email, role, studentId)
+        }
     }
 
     suspend fun checkAndMarkAttendance(
