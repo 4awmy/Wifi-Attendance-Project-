@@ -108,7 +108,7 @@ class AttendanceViewModel : ViewModel() {
         }
     }
 
-    private fun loadDummyAttendanceSheet() {
+    fun loadDummyAttendanceSheet() {
         // Hardcoded Dates
         val dates = listOf("Mon 10/1", "Tue 10/2", "Wed 10/3", "Thu 10/4", "Fri 10/5")
 

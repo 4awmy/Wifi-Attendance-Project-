@@ -164,8 +164,7 @@ class AttendanceRepository {
             return "Attendance already marked"
         }
 
-        // 4️ Save attendance
-        val currentUserId = auth.currentUser?.uid ?: "anonymous"
+
 
         val data = hashMapOf(
             "name" to name,

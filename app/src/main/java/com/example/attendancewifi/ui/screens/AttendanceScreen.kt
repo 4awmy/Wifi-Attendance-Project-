@@ -40,7 +40,7 @@ fun AttendanceScreen(
 
     LaunchedEffect(uiState.successMessage) {
         if (uiState.successMessage != null) {
-            kotlinx.coroutines.delay(2000)
+            kotlinx.coroutines.delay(5000)
             viewModel.clearMessages()
         }
     }
@@ -63,8 +63,8 @@ fun AttendanceScreen(
             }
 
             viewModel.markAttendance(
-                name = "Nariman",
-                studentId = "231006695",
+                name = "ziko",
+                studentId = "231007795",
                 courseName = courseName,
                 DoctorName = "Reem",
                 studentGroup = "Gp1",
@@ -162,7 +162,7 @@ fun AttendanceScreen(
 // Replace the success branch inside the status Card's Column with this:
                         uiState.successMessage != null -> {
                             Text(
-                                text = uiState.successMessage ?: "🎉 Attendance Taken",
+                                text = uiState.successMessage !!,
                                 color = SuccessGreen,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold
