@@ -1,3 +1,4 @@
+// kotlin
 package com.example.attendancewifi.ui.screens
 
 import android.Manifest
@@ -37,13 +38,53 @@ fun AttendanceScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
 
+    LaunchedEffect(uiState.successMessage) {
+        if (uiState.successMessage != null) {
+            kotlinx.coroutines.delay(2000)
+            viewModel.clearMessages()
+        }
+    }
+
+    // local function to perform the wifi check + attendance marking
+    fun doCheckAndMarkAttendance() {
+        try {
+            val wifiScanner = WifiScanner(context)
+            val networkInfo = try {
+                wifiScanner.getCurrentNetwork()
+            } catch (e: Exception) {
+                Toast.makeText(context, "Error scanning Wi‑Fi: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                null
+            }
+
+            val bssid = networkInfo?.bssid ?: ""
+            if (bssid.isBlank() || bssid == "02:00:00:00:00:00") {
+                Toast.makeText(context, "Enable Wi‑Fi and Location services", Toast.LENGTH_LONG).show()
+                return
+            }
+
+            viewModel.markAttendance(
+                name = "Nariman",
+                studentId = "231006695",
+                courseName = courseName,
+                DoctorName = "Reem",
+                studentGroup = "Gp1",
+                currentBssid = bssid
+            )
+        } catch (e: Exception) {
+            Toast.makeText(context, "Unexpected error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+        }
+    }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
-        if (!isGranted) {
+        if (isGranted) {
+            // automatically continue the operation after the user grants permission
+            doCheckAndMarkAttendance()
+        } else {
             Toast.makeText(
                 context,
-                "Location permission is required to verify Wi-Fi.",
+                "Location permission is required to verify Wi‑Fi.",
                 Toast.LENGTH_LONG
             ).show()
         }
@@ -54,8 +95,7 @@ fun AttendanceScreen(
             .fillMaxSize()
             .background(LightGrayBg)
     ) {
-
-        //  HEADER (Blue Background)
+        // HEADER (Blue Background)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -118,14 +158,17 @@ fun AttendanceScreen(
                             )
                         }
 
+                        // kotlin
+// Replace the success branch inside the status Card's Column with this:
                         uiState.successMessage != null -> {
                             Text(
-                                text = "🎉 Attendance Taken",
+                                text = uiState.successMessage ?: "🎉 Attendance Taken",
                                 color = SuccessGreen,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
+
 
                         uiState.errorMessage != null -> {
                             Text(
@@ -155,32 +198,12 @@ fun AttendanceScreen(
                         )
                     ) {
                         PackageManager.PERMISSION_GRANTED -> {
-                            val wifiScanner = WifiScanner(context)
-                            val networkInfo = wifiScanner.getCurrentNetwork()
-
-                            if (
-                                networkInfo.bssid.isBlank() ||
-                                networkInfo.bssid == "02:00:00:00:00:00"
-                            ) {
-                                Toast.makeText(
-                                    context,
-                                    "Enable Wi-Fi and Location services",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                return@Button
-                            }
-
-                            viewModel.markAttendance(
-                                name = "Nariman",
-                                studentId = "231006695",
-                                courseName = courseName,
-                                DoctorName = "Reem",
-                                studentGroup = "Gp1",
-                                currentBssid = networkInfo.bssid
-                            )
+                            // permission already granted -> perform check
+                            doCheckAndMarkAttendance()
                         }
 
                         else -> {
+                            // request permission; on grant the permissionLauncher will call doCheckAndMarkAttendance()
                             permissionLauncher.launch(
                                 Manifest.permission.ACCESS_FINE_LOCATION
                             )
@@ -188,12 +211,11 @@ fun AttendanceScreen(
                     }
                 },
 
-                        enabled = !uiState.isLoading && uiState.successMessage == null,
+                enabled = !uiState.isLoading && uiState.successMessage == null,
                 modifier = Modifier
                     .fillMaxWidth()
-
                     .height(56.dp),
-                        contentPadding = PaddingValues(0.dp),
+                contentPadding = PaddingValues(0.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = PrimaryBlue,

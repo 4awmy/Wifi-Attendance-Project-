@@ -22,6 +22,14 @@ class AttendanceViewModel : ViewModel() {
         loadAnalytics("CS101 - Intro to CS")
         loadDummyAttendanceSheet()
     }
+    fun clearMessages() {
+        _uiState.update {
+            it.copy(
+                successMessage = null,
+                errorMessage = null
+            )
+        }
+    }
 
     fun loginUser(email: String, pass: String) {
         // Validation

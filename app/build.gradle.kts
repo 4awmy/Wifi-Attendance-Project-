@@ -67,6 +67,17 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended") // Added for Icons.Default.Book
     implementation("com.google.firebase:firebase-firestore:26.0.2")
+    // In your app/build.gradle.kts file
+
+
+
+        // ... your other dependencies like core-ktx, lifecycle-runtime, compose-ui, etc.
+
+        // ✅ ADD THIS LINE TO FIX THE ERROR
+        implementation("io.coil-kt:coil-compose:2.5.0") // Use the latest version
+
+        // ... other dependencies
+
 
     // Testing
     testImplementation("junit:junit:4.13.2")

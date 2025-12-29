@@ -31,7 +31,7 @@ fun CoursesScreen(onCourseClick: (Course) -> Unit) {
         Course("EBA3202", "Differential Equations"),
         Course("CIT3200", "Prof. Training in Mobile App"),
         Course("CCS3203", "Operating Systems"),
-        Course("CCS3202", "Systems Programming"),
+        Course("CCS3202", "System Programming"),
         Course("CAI3101", "Artificial Intelligence"),
         Course("CCS3402", "Database Systems")
     )
