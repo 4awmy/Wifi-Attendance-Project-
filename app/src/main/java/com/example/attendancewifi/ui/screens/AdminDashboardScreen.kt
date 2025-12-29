@@ -1,20 +1,68 @@
 package com.example.attendancewifi.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.attendancewifi.viewmodel.AttendanceViewModel
+
+private val PrimaryBlue = Color(0xFF132B5B)
+private val LightGrayBg = Color(0xFFF4F7FB)
+private val CardBg = Color.White
+
+
+
+@Composable
+fun StyledTabRow(
+    tabs: List<String>,
+    selectedTabIndex: Int,
+    onTabSelected: (Int) -> Unit
+) {
+    TabRow(
+        selectedTabIndex = selectedTabIndex,
+        containerColor = PrimaryBlue,
+        indicator = { tabPositions ->
+            Box(
+                Modifier
+                    .tabIndicatorOffset(tabPositions[selectedTabIndex])
+                    .height(3.dp)
+                    .background(Color.White)
+            )
+        },
+        divider = {}
+    ) {
+        tabs.forEachIndexed { index, title ->
+            Tab(
+                selected = selectedTabIndex == index,
+                onClick = { onTabSelected(index) },
+                text = {
+                    Text(
+                        text = title,
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = if (selectedTabIndex == index)
+                            FontWeight.Bold else FontWeight.Medium
+                    )
+                }
+            )
+        }
+    }
+}
 
 @Composable
 fun AdminDashboardScreen(
@@ -24,7 +72,6 @@ fun AdminDashboardScreen(
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf("Manage Courses", "Add Instructor", "Add Student")
 
-    // Load admin data when screen opens
     LaunchedEffect(Unit) {
         viewModel.loadAdminData()
     }
@@ -32,39 +79,44 @@ fun AdminDashboardScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(LightGrayBg)
     ) {
-        // --- TITLE ---
-        Text(
-            text = "Admin Dashboard",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
 
-        // --- TABS ---
-        TabRow(selectedTabIndex = selectedTabIndex) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTabIndex == index,
-                    onClick = { selectedTabIndex = index },
-                    text = { Text(title) }
-                )
-            }
-        }
+
+            Text(
+                text = "Admin Dashboard",
+                color = PrimaryBlue,
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(20.dp)
+            )
+
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- CONTENT ---
-        when (selectedTabIndex) {
-            0 -> ManageCoursesTab(viewModel, uiState.courses, uiState.instructors)
-            1 -> AddInstructorTab(viewModel)
-            2 -> AddStudentTab(viewModel)
+        StyledTabRow(
+            tabs = tabs,
+            selectedTabIndex = selectedTabIndex,
+            onTabSelected = { selectedTabIndex = it }
+        )
+
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        //  CONTENT CARD
+        Card(
+            modifier = Modifier.fillMaxSize(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = CardBg)
+        ) {
+            when (selectedTabIndex) {
+                0 -> ManageCoursesTab(viewModel, uiState.courses, uiState.instructors)
+                1 -> AddInstructorTab(viewModel)
+                2 -> AddStudentTab(viewModel)
+            }
         }
     }
 }
-
 @Composable
 fun AddStudentTab(viewModel: AttendanceViewModel) {
     var name by remember { mutableStateOf("") }
@@ -75,41 +127,76 @@ fun AddStudentTab(viewModel: AttendanceViewModel) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
+
+        //  TITLE
+        Text(
+            text = "Add New Student",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF132B5B)
+        )
+
+        Text(
+            text = "Create a student account and assign an ID",
+            fontSize = 13.sp,
+            color = Color.Gray
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        //  Name
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text("Name") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Full Name") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
         )
 
+        //  Student ID
         OutlinedTextField(
             value = studentId,
             onValueChange = { studentId = it },
             label = { Text("Student ID") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
         )
 
+        //  Email
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Email Address") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
         )
 
+        //  Password
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation()
         )
 
+        Spacer(modifier = Modifier.height(20.dp))
+
+        //  ACTION BUTTON
         Button(
             onClick = {
-                if (name.isNotBlank() && email.isNotBlank() && password.isNotBlank() && studentId.isNotBlank()) {
+                if (
+                    name.isNotBlank() &&
+                    email.isNotBlank() &&
+                    password.isNotBlank() &&
+                    studentId.isNotBlank()
+                ) {
                     viewModel.createStudent(email, password, name, studentId)
+
                     // Clear fields
                     name = ""
                     email = ""
@@ -117,11 +204,25 @@ fun AddStudentTab(viewModel: AttendanceViewModel) {
                     studentId = ""
                 }
             },
+            enabled = name.isNotBlank() &&
+                    email.isNotBlank() &&
+                    password.isNotBlank() &&
+                    studentId.isNotBlank(),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp)
+                .height(52.dp),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF132B5B),
+                disabledContainerColor = Color(0xFF132B5B).copy(alpha = 0.4f),
+                contentColor = Color.White
+            )
         ) {
-            Text("Create Student")
+            Text(
+                text = "Create Student",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
     }
 }
@@ -134,50 +235,110 @@ fun ManageCoursesTab(
 ) {
     var newCourseName by remember { mutableStateOf("") }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Add Course Section
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+
+        // 📘 SECTION TITLE
+        Text(
+            text = "Manage Courses",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = PrimaryBlue
+        )
+
+        Text(
+            text = "Create courses and assign instructors",
+            fontSize = 13.sp,
+            color = Color.Gray
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        //  ADD COURSE CARD
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(4.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            OutlinedTextField(
-                value = newCourseName,
-                onValueChange = { newCourseName = it },
-                label = { Text("Course Name") },
-                modifier = Modifier.weight(1f)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Button(
-                onClick = {
-                    if (newCourseName.isNotBlank()) {
-                        viewModel.addCourse(newCourseName)
-                        newCourseName = ""
-                    }
-                },
-                modifier = Modifier.height(56.dp)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Add")
+
+                OutlinedTextField(
+                    value = newCourseName,
+                    onValueChange = { newCourseName = it },
+                    label = { Text("Course Name") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Button(
+                    onClick = {
+                        if (newCourseName.isNotBlank()) {
+                            viewModel.addCourse(newCourseName)
+                            newCourseName = ""
+                        }
+                    },
+                    enabled = newCourseName.isNotBlank(),
+                    modifier = Modifier.height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = PrimaryBlue,
+                        disabledContainerColor = PrimaryBlue.copy(alpha = 0.4f),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text(
+                        text = "Add",
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-        Divider()
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        // Course List
+        //  COURSE LIST HEADER
+        Text(
+            text = "Existing Courses",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = PrimaryBlue
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Divider()
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        //  COURSE LIST
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.fillMaxSize() ,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+
         ) {
             items(courses) { course ->
-                CourseItem(course, instructors, onAssign = { courseName, instructorId ->
-                    viewModel.assignInstructor(courseName, instructorId)
-                })
+                CourseItem(
+                    course = course,
+                    instructors = instructors,
+                    onAssign = { courseName, instructorId ->
+                        viewModel.assignInstructor(courseName, instructorId)
+                    }
+                )
             }
         }
     }
 }
-
 @Composable
 fun CourseItem(
     course: com.example.attendancewifi.data.models.Course,
@@ -186,25 +347,40 @@ fun CourseItem(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    // Find current instructor name
-    val currentInstructorName = instructors.find { it.uid == course.instructorId }?.name ?: "Unassigned"
+    val currentInstructorName =
+        instructors.find { it.uid == course.instructorId }?.name ?: "Unassigned"
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
-            Text(text = course.name, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(8.dp))
 
-            // Instructor Dropdown
+            //  Course Name
+            Text(
+                text = course.name,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF132B5B)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            //  Instructor Dropdown
             Box(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = currentInstructorName,
                     onValueChange = {},
                     readOnly = true,
+                    singleLine = true,
                     label = { Text("Instructor") },
                     trailingIcon = {
                         Icon(
@@ -223,7 +399,12 @@ fun CourseItem(
                 ) {
                     instructors.forEach { instructor ->
                         DropdownMenuItem(
-                            text = { Text(text = instructor.name) },
+                            text = {
+                                Text(
+                                    text = instructor.name,
+                                    fontSize = 14.sp
+                                )
+                            },
                             onClick = {
                                 onAssign(course.name, instructor.uid)
                                 expanded = false
@@ -236,6 +417,7 @@ fun CourseItem(
     }
 }
 
+
 @Composable
 fun AddInstructorTab(viewModel: AttendanceViewModel) {
     var name by remember { mutableStateOf("") }
@@ -245,45 +427,87 @@ fun AddInstructorTab(viewModel: AttendanceViewModel) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
+
+        //  TITLE
+        Text(
+            text = "Add New Instructor",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = PrimaryBlue
+        )
+
+        Text(
+            text = "Create an instructor account",
+            fontSize = 13.sp,
+            color = Color.Gray
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        //  Name
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text("Name") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Full Name") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
         )
 
+        //  Email
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Email Address") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
         )
 
+        //  Password
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation()
         )
 
+        Spacer(modifier = Modifier.height(20.dp))
+
+        //  ACTION BUTTON
         Button(
             onClick = {
                 if (name.isNotBlank() && email.isNotBlank() && password.isNotBlank()) {
                     viewModel.createInstructor(email, password, name)
+
                     // Clear fields
                     name = ""
                     email = ""
                     password = ""
                 }
             },
+            enabled = name.isNotBlank() &&
+                    email.isNotBlank() &&
+                    password.isNotBlank(),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp)
+                .height(52.dp),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = PrimaryBlue,
+                disabledContainerColor = PrimaryBlue.copy(alpha = 0.4f),
+                contentColor = Color.White
+            )
         ) {
-            Text("Create Instructor")
+            Text(
+                text = "Create Instructor",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
     }
 }
+

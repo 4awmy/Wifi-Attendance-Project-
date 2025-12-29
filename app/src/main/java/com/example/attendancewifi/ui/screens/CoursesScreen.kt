@@ -38,7 +38,7 @@ fun CoursesScreen(onCourseClick: (Course) -> Unit) {
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        // 🔵 Header
+        // Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -75,9 +75,9 @@ fun CoursesScreen(onCourseClick: (Course) -> Unit) {
 fun CourseCard(course: Course, onClick: () -> Unit) {
 
     //  Random color theme (STABLE per course)
-    val colors = remember(course.code) {
+    val colors = remember(course.id) {
         listOf(
-            // 🟢 Green
+            //  Green
             listOf(
                 Color(0xFFEAF4D3),
                 Color(0xFF4A9F46),
@@ -116,7 +116,7 @@ fun CourseCard(course: Course, onClick: () -> Unit) {
                 .background(bottomColor)
         ) {
 
-            // 🔝 Top
+            //  Top
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -135,14 +135,14 @@ fun CourseCard(course: Course, onClick: () -> Unit) {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = course.code,
+                    text = course.id,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = accentColor
                 )
             }
 
-            // 🔽 Bottom
+            // Bottom
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -158,7 +158,7 @@ fun CourseCard(course: Course, onClick: () -> Unit) {
             }
         }
 
-        // ➡️ Arrow
+        // Arrow
         FloatingActionButton(
             onClick = onClick,
             containerColor = Color.White,

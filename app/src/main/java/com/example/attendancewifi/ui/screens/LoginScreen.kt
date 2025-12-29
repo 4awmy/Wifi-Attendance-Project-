@@ -45,7 +45,7 @@ fun LoginScreen(
             .background(BackgroundLight)
     ) {
 
-        // 🔵 Header
+        //  Header
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -83,7 +83,7 @@ fun LoginScreen(
             )
         }
 
-        // 🧾 Form
+        //  Form
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -98,7 +98,7 @@ fun LoginScreen(
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            // 🔢 Registration Number
+            //  Registration Number
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -121,7 +121,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔒 Password
+            //  Password
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },

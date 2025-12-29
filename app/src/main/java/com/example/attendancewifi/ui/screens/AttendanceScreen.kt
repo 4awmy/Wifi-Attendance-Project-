@@ -19,11 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.attendancewifi.data.models.Course
 import com.example.attendancewifi.network.WifiScanner
 import com.example.attendancewifi.viewmodel.AttendanceViewModel
 
-// 🎨 Colors
+// Colors
 private val PrimaryBlue = Color(0xFF132B5B)
 private val SuccessGreen = Color(0xFF4CAF50)
 private val ErrorRed = Color(0xFFE53935)
@@ -31,13 +30,13 @@ private val LightGrayBg = Color(0xFFF4F7FB)
 
 @Composable
 fun AttendanceScreen(
+    courseId: String,
     courseName: String,
     viewModel: AttendanceViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
 
-    // Permission launcher
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -54,135 +53,170 @@ fun AttendanceScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(LightGrayBg)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
     ) {
 
-        // 🔷 TOP — Course Name (centered)
-        Column(
+        //  HEADER (Blue Background)
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .height(160.dp)
+                .background(PrimaryBlue),
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = courseName,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                color = PrimaryBlue
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = courseName,
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
 
-            Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
-
-        }
-
-        // 🔄 MIDDLE — Status Card
-        Card(
-            shape = RoundedCornerShape(18.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = when {
-                    uiState.isLoading -> Color(0xFFE3F2FD)
-                    uiState.successMessage != null -> Color(0xFFE8F5E9)
-                    uiState.errorMessage != null -> Color(0xFFFDECEA)
-                    else -> Color.White
-                }
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                when {
-                    uiState.isLoading -> {
-                        Text("Checking Wi-Fi…", color = PrimaryBlue)
-                    }
-
-                    uiState.successMessage != null -> {
-                        Text(
-                            text = "🎉 Attendance Taken",
-                            color = SuccessGreen,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    uiState.errorMessage != null -> {
-                        Text(
-                            text = uiState.errorMessage!!,
-                            color = ErrorRed,
-                            fontSize = 14.sp
-                        )
-                    }
-
-                    else -> {
-                        Text(
-                            text = "You are ready to take attendance",
-                            color = Color.Gray
-                        )
-                    }
-                }
+                Text(
+                    text = courseId,
+                    fontSize = 14.sp,
+                    color = Color.White.copy(alpha = 0.85f)
+                )
             }
         }
 
-        // 🔘 BOTTOM — Button
-        Button(
-            onClick = {
-                when (
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    )
-                ) {
-                    PackageManager.PERMISSION_GRANTED -> {
-                        val wifiScanner = WifiScanner(context)
-                        val networkInfo = wifiScanner.getCurrentNetwork()
+        // CONTENT
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
-                        if (
-                            networkInfo.bssid.isBlank() ||
-                            networkInfo.bssid == "02:00:00:00:00:00"
-                        ) {
-                            Toast.makeText(
-                                context,
-                                "Enable Wi-Fi and Location services",
-                                Toast.LENGTH_LONG
-                            ).show()
-                            return@Button
+            // STATUS CARD
+            Card(
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = when {
+                        uiState.isLoading -> Color(0xFFE3F2FD)
+                        uiState.successMessage != null -> Color(0xFFE8F5E9)
+                        uiState.errorMessage != null -> Color(0xFFFDECEA)
+                        else -> Color.White
+                    }
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    when {
+                        uiState.isLoading -> {
+                            Text(
+                                text = "Checking Wi-Fi…",
+                                color = PrimaryBlue,
+                                fontSize = 15.sp
+                            )
                         }
 
-                        viewModel.markAttendance(
-                            name = "Nariman",
-                            studentId = "231006695",
-                            courseName = courseName,
-                            DoctorName = "Reem",
-                            studentGroup = "Gp1",
-                            currentBssid = networkInfo.bssid
-                        )
-                    }
+                        uiState.successMessage != null -> {
+                            Text(
+                                text = "🎉 Attendance Taken",
+                                color = SuccessGreen,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
 
-                    else -> {
-                        permissionLauncher.launch(
-                            Manifest.permission.ACCESS_FINE_LOCATION
-                        )
+                        uiState.errorMessage != null -> {
+                            Text(
+                                text = uiState.errorMessage!!,
+                                color = ErrorRed,
+                                fontSize = 14.sp
+                            )
+                        }
+
+                        else -> {
+                            Text(
+                                text = "You are ready to take attendance",
+                                color = Color.Gray,
+                                fontSize = 14.sp
+                            )
+                        }
                     }
                 }
-            },
-            enabled = !uiState.isLoading && uiState.successMessage == null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .padding(bottom = 16.dp),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Text(
-                text = "Take Attendance",
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Medium
-            )
+            }
+
+            Button(
+                onClick = {
+                    when (
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                        )
+                    ) {
+                        PackageManager.PERMISSION_GRANTED -> {
+                            val wifiScanner = WifiScanner(context)
+                            val networkInfo = wifiScanner.getCurrentNetwork()
+
+                            if (
+                                networkInfo.bssid.isBlank() ||
+                                networkInfo.bssid == "02:00:00:00:00:00"
+                            ) {
+                                Toast.makeText(
+                                    context,
+                                    "Enable Wi-Fi and Location services",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                return@Button
+                            }
+
+                            viewModel.markAttendance(
+                                name = "Nariman",
+                                studentId = "231006695",
+                                courseName = courseName,
+                                DoctorName = "Reem",
+                                studentGroup = "Gp1",
+                                currentBssid = networkInfo.bssid
+                            )
+                        }
+
+                        else -> {
+                            permissionLauncher.launch(
+                                Manifest.permission.ACCESS_FINE_LOCATION
+                            )
+                        }
+                    }
+                },
+
+                        enabled = !uiState.isLoading && uiState.successMessage == null,
+                modifier = Modifier
+                    .fillMaxWidth()
+
+                    .height(56.dp),
+                        contentPadding = PaddingValues(0.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = PrimaryBlue,
+                    disabledContainerColor = PrimaryBlue,
+                    contentColor = Color.White
+                )
+            ) {
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = "Take Attendance",
+                        fontSize = 17.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
         }
     }
 }

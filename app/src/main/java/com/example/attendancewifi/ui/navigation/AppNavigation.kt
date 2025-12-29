@@ -38,29 +38,41 @@ fun AppNavigation() {
         // 2. COURSES / STUDENT HOME
         composable("student_home") {
             CoursesScreen(
-                onCourseClick = { courseName ->
-                    navController.navigate("attendance/$courseName")
+                onCourseClick = { course ->
+                    navController.navigate("attendance/${course.id}/${course.name}")
                 }
             )
+
         }
         // Keep old route for backward compatibility if needed, or remove it.
         // For now, I will add an alias or just keep "courses" as well but the logic uses "student_home"
         composable("courses") {
             CoursesScreen(
-                onCourseClick = { courseName ->
-                    navController.navigate("attendance/$courseName")
+                onCourseClick = { course ->
+                    navController.navigate("attendance/${course.id}/${course.name}")
                 }
             )
+
         }
 
         // 3. ATTENDANCE (Now properly handles the String)
         composable(
-            route = "attendance/{courseName}",
-            arguments = listOf(navArgument("courseName") { type = NavType.StringType })
+            route = "attendance/{courseId}/{courseName}",
+            arguments = listOf(
+                navArgument("courseId") { type = NavType.StringType },
+                navArgument("courseName") { type = NavType.StringType }
+            )
         ) { backStackEntry ->
-            val courseName = backStackEntry.arguments?.getString("courseName") ?: "Class"
-            AttendanceScreen(courseName = courseName) // ✅ Now passing the required String
+
+            val courseId = backStackEntry.arguments?.getString("courseId") ?: ""
+            val courseName = backStackEntry.arguments?.getString("courseName") ?: ""
+
+            AttendanceScreen(
+                courseId = courseId,
+                courseName = courseName
+            )
         }
+
 
         // 4. ADMIN DASHBOARD
         composable("admin_dashboard") {
