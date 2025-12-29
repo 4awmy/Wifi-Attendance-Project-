@@ -6,7 +6,6 @@ import com.example.attendancewifi.data.AttendanceRepository
 import com.example.attendancewifi.data.AttendanceUiState
 import com.example.attendancewifi.data.models.StudentAttendance
 import com.example.attendancewifi.network.WifiScanner
-
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update

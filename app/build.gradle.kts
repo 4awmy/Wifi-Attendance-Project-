@@ -67,7 +67,6 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended") // Added for Icons.Default.Book
     implementation("com.google.firebase:firebase-firestore:26.0.2")
-    implementation("androidx.compose.material:material-icons-extended")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
@@ -78,16 +77,11 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     implementation("androidx.navigation:navigation-compose:2.8.5")
-    implementation("androidx.compose.material3:material3:1.2.1")
 
 // In D:/AttendanceWifi/app/build.gradle.kts
 
 // Force all Firebase libraries to use versions from this specific, stable BOM
     implementation(enforcedPlatform("com.google.firebase:firebase-bom:33.1.2"))
-
-        // ... other dependencies
-        implementation("io.coil-kt:coil-compose:2.7.0") // Check for the latest version
-
 
 // Add the libraries (without version numbers)implementation("com.google.firebase:firebase-analytics-ktx") // Use the KTX version
     implementation("com.google.firebase:firebase-auth-ktx")     // Use the KTX version
